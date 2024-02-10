@@ -12,12 +12,10 @@ export async function getBody(req: http.IncomingMessage) {
         try {
           resolve(JSON.parse(body))
         } catch (err) {
-          console.log('========== end', err) // TODO
-          reject(err)
+          resolve('')
         }
       })
     } catch (err) {
-      console.log('==========', err) // TODO
       reject(err)
     }
   })
