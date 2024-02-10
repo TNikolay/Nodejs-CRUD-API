@@ -32,7 +32,6 @@ export class MongoLite {
   }
 
   getUsers(): IUser[] {
-    // console.log(JSON.stringify(this.db))
     return this.db
   }
 
@@ -40,9 +39,23 @@ export class MongoLite {
     return this.db.find(v => v.id == id)
   }
 
-  addUser(user: IUserData): IUser {
-    const newUser: IUser = { id: randomUUID(), username: user.username, age: user.age, hobbies: user.hobbies }
+  addUser(data: IUserData): IUser {
+    const newUser: IUser = { id: randomUUID(), username: data.username, age: data.age, hobbies: data.hobbies }
     this.db.push(newUser)
     return newUser
+  }
+
+  updateUser(id: string, data: IUserData): IUser | undefined {
+    const index = this.db.findIndex(v => v.id == id)
+    if (index === -1) return undefined
+    this.db[index] = { id: this.db[index].id, ...data }
+    return this.db[index]
+  }
+
+  deleteUser(id: string): boolean {
+    const index = this.db.findIndex(v => v.id == id)
+    if (index === -1) return false
+    this.db.splice(index, 1)
+    return true
   }
 }

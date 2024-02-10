@@ -44,11 +44,31 @@ const server = http.createServer(async (req, res) => {
       break
 
     case 'DELETE':
-      console.log('delete', req.url)
+      if (req.url?.startsWith('/api/users/')) {
+        const uuid = req.url.slice(11)
+        if (isUUID4(uuid)) {
+          if (db.deleteUser(uuid)) {
+            res.statusCode = 204
+            res.end()
+          } else sendError(res, 404, 'User not found')
+        } else sendError(res, 400, 'Invalid user id format')
+      } else sendError404(res)
       break
 
     case 'PUT':
-      console.log('put', req.url)
+      if (req.url?.startsWith('/api/users/')) {
+        const uuid = req.url.slice(11)
+        if (isUUID4(uuid)) {
+          const data = await getBody(req)
+          if (isUserData(data)) {
+            const user = db.updateUser(uuid, data)
+            if (user) {
+              res.statusCode = 200
+              res.end(JSON.stringify(user))
+            } else sendError(res, 404, 'User not found')
+          } else sendError(res, 400, 'Invalid data in request')
+        } else sendError(res, 400, 'Invalid user id format')
+      } else sendError404(res)
       break
 
     default:
