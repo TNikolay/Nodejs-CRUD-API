@@ -1,8 +1,8 @@
 import 'dotenv/config'
 import http from 'http'
 import { MongoLite } from './MongoLite.js'
+import { isUserData } from './model.js'
 import { getBody, isUUID4, sendError, sendError404 } from './utils.js'
-import { IUser, IUserData, isUserData } from './model.js'
 
 const PORT = Number(process.env.PORT) || 4000
 console.log('--------------', PORT)
@@ -14,13 +14,15 @@ const server = http.createServer(async (req, res) => {
     console.log('We have a new request: ', req.url, req.method)
     res.setHeader('Content-Type', 'application/json')
 
+    const url = req.url?.endsWith('/') ? req.url.slice(0, -1) : req.url
+
     switch (req.method) {
       case 'GET':
-        if (req.url === '/api/users') {
+        if (url === '/api/users') {
           res.statusCode = 200
           res.end(JSON.stringify(db.getUsers()))
-        } else if (req.url?.startsWith('/api/users/')) {
-          const uuid = req.url.slice(11)
+        } else if (url?.startsWith('/api/users/')) {
+          const uuid = url.slice(11)
 
           if (isUUID4(uuid)) {
             const user = db.getUser(uuid)
@@ -33,7 +35,7 @@ const server = http.createServer(async (req, res) => {
         break
 
       case 'POST':
-        if (req.url === '/api/users') {
+        if (url === '/api/users') {
           const data = await getBody(req)
           if (isUserData(data)) {
             const newUser = db.addUser(data)
@@ -44,8 +46,8 @@ const server = http.createServer(async (req, res) => {
         break
 
       case 'DELETE':
-        if (req.url?.startsWith('/api/users/')) {
-          const uuid = req.url.slice(11)
+        if (url?.startsWith('/api/users/')) {
+          const uuid = url.slice(11)
           if (isUUID4(uuid)) {
             if (db.deleteUser(uuid)) {
               res.statusCode = 204
@@ -56,8 +58,8 @@ const server = http.createServer(async (req, res) => {
         break
 
       case 'PUT':
-        if (req.url?.startsWith('/api/users/')) {
-          const uuid = req.url.slice(11)
+        if (url?.startsWith('/api/users/')) {
+          const uuid = url.slice(11)
           if (isUUID4(uuid)) {
             const data = await getBody(req)
             if (isUserData(data)) {
